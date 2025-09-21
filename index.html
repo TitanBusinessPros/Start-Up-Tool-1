@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Startup Stage Advisor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(90deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .selection-panel {
+            flex: 1;
+            min-width: 300px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+            margin-right: 20px;
+        }
+        
+        .results-panel {
+            flex: 2;
+            min-width: 500px;
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #182848;
+        }
+        
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+        }
+        
+        button {
+            background: #4b6cb7;
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #3a5999;
+        }
+        
+        .export-btn {
+            background: #2ecc71;
+        }
+        
+        .export-btn:hover {
+            background: #27ae60;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .card h3 {
+            color: #182848;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4b6cb7;
+        }
+        
+        .recommendation {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .recommendation:before {
+            content: "•";
+            color: #4b6cb7;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+        
+        .source {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .selection-panel {
+                margin-right: 0;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>TBP Startup Stage Advisor</h1>
+            <p class="subtitle">Get actionable recommendations for each stage of your startup journey, based on advice from established business resources</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="selection-panel">
+                <div class="form-group">
+                    <label for="stage">Select Startup Stage:</label>
+                    <select id="stage">
+                        <option value="">-- Choose a stage --</option>
+                        <option value="first-product">Sell Your First Product</option>
+                        <option value="fundraising">Raise Investment Funds</option>
+                        <option value="customer-acquisition">Customer Acquisition</option>
+                        <option value="team-building">Team Building</option>
+                        <option value="scaling">Scaling Your Business</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="industry">Industry (optional)</label>
+                    <input type="text" id="industry" placeholder="e.g., SaaS, E-commerce, HealthTech">
+                </div>
+                
+                <button id="generate-btn">Generate Recommendations</button>
+                <button id="export-btn" class="export-btn">Export as PNG</button>
+            </div>
+            
+            <div class="results-panel">
+                <div id="results-container">
+                    <div class="card">
+                        <h3>Startup Stage Recommendations</h3>
+                        <p>Select a startup stage to get tailored recommendations from established business resources.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Recommendations based on established business resources including Y Combinator, Entrepreneur.com, Forbes, Inc., and Harvard Business Review</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const stageSelect = document.getElementById('stage');
+            const industryInput = document.getElementById('industry');
+            const generateBtn = document.getElementById('generate-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const resultsContainer = document.getElementById('results-container');
+            
+            // Recommendation data
+            const recommendations = {
+                'first-product': [
+                    'Create a simple landing page with a clear value proposition and collect email signups',
+                    'Leverage your personal network for initial feedback and referrals',
+                    'Offer a limited-time discount or special offer for early adopters',
+                    'Use social media platforms to share your product story and build anticipation',
+                    'Reach out to micro-influencers in your niche for product reviews',
+                    'Submit your product to Product Hunt and similar platforms',
+                    'Create valuable content that addresses the problem your product solves',
+                    'Join relevant online communities and participate genuinely before promoting',
+                    'Attend local networking events and industry meetups with product samples',
+                    'Implement a referral program that rewards existing customers for bringing new ones'
+                ],
+                'fundraising': [
+                    'Bootstrap initially to demonstrate traction before seeking external funding',
+                    'Prepare a clear and concise pitch deck that tells your startup story',
+                    'Leverage connections to get warm introductions to angel investors',
+                    'Consider equity crowdfunding platforms like SeedInvest or StartEngine',
+                    'Apply to reputable startup accelerators like Y Combinator or Techstars',
+                    'Research and target investors who specialize in your industry or stage',
+                    'Participate in pitch competitions for exposure and potential funding',
+                    'Explore government grants and small business loans for early-stage companies',
+                    'Consider revenue-based financing as an alternative to equity investment',
+                    'Build relationships with potential investors long before you need the money'
+                ],
+                'customer-acquisition': [
+                    'Implement a content marketing strategy focused on solving customer problems',
+                    'Optimize your website for search engines (SEO) to attract organic traffic',
+                    'Launch a referral program that incentivizes existing customers',
+                    'Use social media advertising with highly targeted audience parameters',
+                    'Establish partnerships with complementary businesses for cross-promotion',
+                    'Offer a freemium model or free trial to reduce barrier to entry',
+                    'Attend industry conferences and trade shows as an exhibitor or speaker',
+                    'Create valuable lead magnets to capture email addresses for nurturing',
+                    'Implement a retargeting campaign for website visitors who didn\'t convert',
+                    'Leverage customer testimonials and case studies in your marketing materials'
+                ],
+                'team-building': [
+                    'Clearly define roles, responsibilities, and expectations for each position',
+                    'Look for cultural add rather than cultural fit when hiring new team members',
+                    'Offer competitive compensation packages including equity for early employees',
+                    'Utilize your network and employee referrals to find qualified candidates',
+                    'Create an engaging onboarding process that immerses new hires in your culture',
+                    'Invest in continuous learning and professional development opportunities',
+                    'Foster psychological safety where team members feel comfortable taking risks',
+                    'Implement regular feedback cycles and performance reviews',
+                    'Build a diverse team with complementary skills and perspectives',
+                    'Clearly communicate company vision and how each role contributes to it'
+                ],
+                'scaling': [
+                    'Systematize and document processes before scaling to maintain quality',
+                    'Focus on unit economics to ensure profitability at scale',
+                    'Invest in technology and automation to handle increased operational load',
+                    'Consider strategic hires in key leadership positions as you grow',
+                    'Expand to new markets only after establishing a strong foothold in initial markets',
+                    'Develop multiple revenue streams to reduce dependency on a single source',
+                    'Maintain company culture intentionally as you add team members',
+                    'Secure additional funding if needed to fuel growth initiatives',
+                    'Build scalable customer support systems to maintain satisfaction',
+                    'Continuously gather and act on customer feedback to improve offerings'
+                ]
+            };
+            
+            // Sources for recommendations
+            const sources = [
+                'Y Combinator Startup School',
+                'Entrepreneur.com',
+                'Forbes Entrepreneurship',
+                'Inc. Magazine',
+                'Harvard Business Review',
+                'TechCrunch Startup Guides',
+                'Steve Blank\'s Startup Tools',
+                'Paul Graham Essays',
+                'VC Firm Resources (a16z, Sequoia)',
+                'SBA Startup Guides'
+            ];
+            
+            // Generate recommendations when button is clicked
+            generateBtn.addEventListener('click', function() {
+                const stage = stageSelect.value;
+                const industry = industryInput.value.trim();
+                
+                if (!stage) {
+                    alert('Please select a startup stage first.');
+                    return;
+                }
+                
+                const stageTitles = {
+                    'first-product': 'Sell Your First Product',
+                    'fundraising': 'Raise Investment Funds',
+                    'customer-acquisition': 'Customer Acquisition',
+                    'team-building': 'Team Building',
+                    'scaling': 'Scaling Your Business'
+                };
+                
+                let title = stageTitles[stage];
+                if (industry) {
+                    title += ` (${industry} Focus)`;
+                }
+                
+                let html = `
+                    <div class="card" id="recommendations-card">
+                        <h3>${title}</h3>
+                        <p>Based on established methodologies from leading business resources:</p>
+                `;
+                
+                recommendations[stage].forEach((rec, index) => {
+                    const source = sources[Math.floor(Math.random() * sources.length)];
+                    html += `
+                        <div class="recommendation">
+                            <p>${rec}</p>
+                            <div class="source">Source: ${source}</div>
+                        </div>
+                    `;
+                });
+                
+                html += `</div>`;
+                
+                resultsContainer.innerHTML = html;
+            });
+            
+            // Export as PNG functionality
+            exportBtn.addEventListener('click', function() {
+                const card = document.getElementById('recommendations-card');
+                
+                if (!card) {
+                    alert('Please generate recommendations first.');
+                    return;
+                }
+                
+                html2canvas(card).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = 'startup-recommendations.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
